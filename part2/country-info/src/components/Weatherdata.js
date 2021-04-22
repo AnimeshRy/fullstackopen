@@ -6,14 +6,29 @@ const FetchData = (country, apiKey) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cancelToken = axios.CancelToken;
+    const source = cancelToken.source();
     const fetchWeather = async () => {
-      const response = await axios.get(
-        `http://api.weatherstack.com/current?access_key=${apiKey}&query=${country}`
-      );
-      setWeather(response.data.current);
-      setLoading(false);
+      try {
+        const response = await axios.get(
+          `http://api.weatherstack.com/current?access_key=${apiKey}&query=${country}`,
+          { cancelToken: source.token }
+        );
+        setWeather(response.data.current);
+        setLoading(false);
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          return 'axios request cancelled';
+        }
+        return error;
+      }
     };
     fetchWeather();
+
+    //clean up
+    return () => {
+      source.cancel('axios request cancelled');
+    };
   }, [country, apiKey]);
 
   return { loading, weather };

@@ -2,19 +2,31 @@ import React, { useState, useEffect } from 'react';
 import List from './components/List';
 import PersonForm from './components/PersonForm';
 import Filter from './components/Filter';
-import personService from './services/numbers';
+import personService from './services/Numbers';
+import Notification from './components/Notification';
+import Information from './components/Information';
+import './App.css';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [searchPerson, setSearchPerson] = useState('');
+  const [errorMessage, seterrorMessage] = useState(null);
+  const [informationMessage, setinformationMessage] = useState(null);
 
   // only run on first render
   useEffect(() => {
     async function fetchData() {
-      const response = await personService.getAll();
-      setPersons(response);
+      try {
+        const response = await personService.getAll();
+        setPersons(response);
+      } catch (error) {
+        seterrorMessage('Error in retrieving data from the server');
+        setTimeout(() => {
+          seterrorMessage(null);
+        }, 5000);
+      }
     }
     fetchData();
   }, []);
@@ -22,15 +34,25 @@ const App = () => {
   const updateNumber = async (name, newNumber) => {
     const person = persons.find((person) => person.name === name);
     const updatedPerson = { ...person, number: newNumber };
-    const returnedRecord = await personService.update(
-      updatedPerson.id,
-      updatedPerson
-    );
-    setPersons(
-      persons.map((person) =>
-        person.id !== updatedPerson.id ? person : returnedRecord
-      )
-    );
+    try {
+      const returnedRecord = await personService.update(
+        updatedPerson.id,
+        updatedPerson
+      );
+      setPersons(
+        persons.map((person) =>
+          person.id !== updatedPerson.id ? person : returnedRecord
+        )
+      );
+    } catch (error) {
+      seterrorMessage(
+        `Information of ${name} has already been removed from the server`
+      );
+      setPersons(persons.filter((pp) => pp !== person));
+      setTimeout(() => {
+        seterrorMessage(null);
+      }, 3000);
+    }
     setNewName('');
     setNewNumber('');
   };
@@ -52,15 +74,35 @@ const App = () => {
       }
       return;
     }
-    const returnedRecord = await personService.create(newObj);
-    setPersons(persons.concat(returnedRecord));
+    try {
+      const returnedRecord = await personService.create(newObj);
+      setPersons(persons.concat(returnedRecord));
+      setinformationMessage(`Added ${newName} to the phonebook!`);
+      setTimeout(() => {
+        setinformationMessage(null);
+      }, 3000);
+    } catch (error) {
+      seterrorMessage('Could not create new record');
+      setTimeout(() => {
+        seterrorMessage(null);
+      }, 5000);
+    }
     setNewName('');
     setNewNumber('');
   };
   const deletePerson = async (id) => {
     const tobeDeleted = persons.find((n) => n.id === id);
     if (window.confirm(`Do you really want to delete ${tobeDeleted.name} ?`)) {
-      await personService.deleteRecord(id);
+      try {
+        await personService.deleteRecord(id);
+      } catch (error) {
+        seterrorMessage(
+          'Looks like the record is already removed from the server'
+        );
+        setTimeout(() => {
+          seterrorMessage(null);
+        }, 5000);
+      }
       setPersons(persons.filter((person) => person.id !== id));
     }
   };
@@ -84,9 +126,12 @@ const App = () => {
       person.name.toLowerCase().includes(searchPerson.toLowerCase())
     );
   };
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Information message={informationMessage}></Information>
+      <Notification message={errorMessage}></Notification>
       <Filter
         inputValue={searchPerson}
         handleInputChange={handleFilterChange}
