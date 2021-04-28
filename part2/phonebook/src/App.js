@@ -39,10 +39,9 @@ const App = () => {
         updatedPerson.id,
         updatedPerson
       );
-      console.log(returnedRecord);
       setPersons(
         persons.map((person) =>
-          person.name === name ? returnedRecord : person
+          person.id !== updatedPerson.id ? person : returnedRecord
         )
       );
     } catch (error) {
@@ -82,9 +81,8 @@ const App = () => {
       setTimeout(() => {
         setinformationMessage(null);
       }, 3000);
-    } catch ({ response }) {
-      // Validation Error
-      seterrorMessage(response.data.error);
+    } catch (error) {
+      seterrorMessage('Could not create new record');
       setTimeout(() => {
         seterrorMessage(null);
       }, 5000);

@@ -1,16 +1,32 @@
-require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
-const cors = require('cors');
-const process = require('process');
-const Person = require('./models/Person');
+
 const app = express();
 
-app.use(express.static('build')); //use static react spa
-
-// middlewares
-app.use(cors()); //cors
 app.use(express.json()); // json-parser
+
+let phoneBook = [
+  {
+    id: 1,
+    name: 'Arto Hellas',
+    number: '040-123456',
+  },
+  {
+    id: 2,
+    name: 'Ada Lovelace',
+    number: '39-44-5323523',
+  },
+  {
+    id: 3,
+    name: 'Dan Abramov',
+    number: '12-43-64565',
+  },
+  {
+    id: 4,
+    name: 'Mary Poppendick',
+    number: '39-23-32434512',
+  },
+];
 
 // morgan custom token
 morgan.token('postData', (request) => {
@@ -25,45 +41,49 @@ app.use(
 );
 
 app.get('/api/persons', (request, response) => {
-  Person.find({}).then((result) => {
-    response.json(result);
-  });
+  response.json(phoneBook);
 });
 
 app.get('/info', (request, response) => {
-  Person.estimatedDocumentCount().then((res) => {
-    console.log(res);
-    response.send(`
-    <div><p>PhoneBook has ${res} people currently</p></div>
-    <p>${new Date()}</p>
-    `);
-  });
+  response.send(`
+  <div><p>PhoneBook has ${phoneBook.length} people currently</p></div>
+  <p>${new Date()}</p>
+  `);
 });
 
-app.get('/api/persons/:id', (request, response, next) => {
-  const id = request.params.id;
-  Person.findById(id)
-    .then((record) => {
-      if (record) {
-        response.json(record);
-      } else {
-        response.status(404).end();
-      }
-    })
-    .catch((error) => next(error));
+app.get('/api/persons/:id', (request, response) => {
+  const id = parseInt(request.params.id);
+  const record = phoneBook.find((record) => record.id === id);
+
+  if (record) {
+    response.json(record);
+  } else {
+    response.status(404).end();
+  }
 });
 
-app.delete('/api/persons/:id', (request, response, next) => {
-  const id = request.params.id;
+app.delete('/api/persons/:id', (request, response) => {
+  const id = parseInt(request.params.id);
   // Check if record available
-  Person.findByIdAndRemove(id)
-    .then((result) => {
-      response.status(204).end();
-    })
-    .catch((error) => next(error));
+  if (phoneBook.some((record) => record.id === id)) {
+    phoneBook = phoneBook.filter((note) => note.id !== id);
+    response.status(204).end();
+  } else {
+    response.status(410).send({ error: 'Item not available in the server' });
+  }
 });
 
-app.post('/api/persons', (request, response, next) => {
+const generateId = () => {
+  const allIds = phoneBook.map((record) => record.id);
+  let id = 1;
+  // find unique id
+  while (allIds.indexOf(id) !== -1) {
+    id = Math.floor(Math.random() * 10000);
+  }
+  return id;
+};
+
+app.post('/api/persons', (request, response) => {
   const body = request.body;
 
   if (!body.name || !body.number) {
@@ -73,41 +93,19 @@ app.post('/api/persons', (request, response, next) => {
   }
 
   const newName = body.name;
-  Person.find({ name: newName }).then((num) => {
-    if (num.length !== 0) {
-      return response.status(409).json({
-        error: 'Name must be unique',
-      });
-    }
+  if (phoneBook.some((person) => person.name === newName)) {
+    return response.status(409).send({ error: 'Name should be unique' });
+  }
 
-    const record = new Person({
-      name: body.name,
-      number: body.number,
-    });
-
-    record
-      .save()
-      .then((savedNote) => savedNote.toJSON())
-      .then((savedAndFormattedNote) => {
-        response.json(savedAndFormattedNote);
-      })
-      .catch((error) => next(error));
-  });
-});
-
-app.put('/api/persons/:id', (request, response, next) => {
-  const body = request.body;
-
-  const person = {
+  const record = {
+    id: generateId(),
     name: body.name,
     number: body.number,
   };
-  const id = request.params.id;
-  Person.findByIdAndUpdate(id, person, { new: true })
-    .then((changedRecord) => {
-      response.json(changedRecord);
-    })
-    .catch((error) => next(error));
+
+  phoneBook = phoneBook.concat(record);
+
+  response.json(phoneBook);
 });
 
 // unknown endpoint middleware
@@ -117,27 +115,7 @@ const unknownEndpoint = (request, response) => {
 
 app.use(unknownEndpoint);
 
-// error handler middleware
-const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
-
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
-    return response.status(400).send({
-      error: 'malformatted id',
-    });
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({
-      error: error.message,
-    });
-  }
-
-  next(error);
-};
-
-// this has to be the last loaded middleware.
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 3001;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
