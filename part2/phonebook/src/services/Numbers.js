@@ -1,5 +1,5 @@
 import axios from 'axios';
-const baseUrl = 'http://localhost:3001/persons';
+const baseUrl = '/api/persons';
 
 const getAll = async () => {
   const request = await axios.get(baseUrl);
@@ -8,7 +8,7 @@ const getAll = async () => {
 
 const create = async (newObject) => {
   const request = await axios.post(baseUrl, newObject);
-  return request.data;
+  return request.then((response) => response.data);
 };
 
 const deleteRecord = async (id) => {
