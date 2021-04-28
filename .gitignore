@@ -1,5 +1,4 @@
 _STORE
-.eslintrc
 .prettierrc
 node_modules
 scripts/flow/*/.flowconfig
@@ -9,8 +8,6 @@ scripts/flow/*/.flowconfig
 .grunt
 _SpecRunner.html
 __benchmarks__
-build/
-build2/
 remote-repo/
 coverage/
 .module-cache
