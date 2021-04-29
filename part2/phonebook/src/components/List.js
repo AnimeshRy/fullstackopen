@@ -7,7 +7,7 @@ const List = ({ list, onDelete }) => {
       <h2>Numbers</h2>
       <ul>
         {list.map((item) => (
-          <Person key={item.name} person={item} onDelete={onDelete}></Person>
+          <Person key={item.id} person={item} onDelete={onDelete}></Person>
         ))}
       </ul>
     </div>

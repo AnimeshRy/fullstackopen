@@ -20,6 +20,7 @@
     "server": "json-server -p3001 --watch db.json",
     "serverD": "json-server -p3001 --watch --delay 1000 db.json"
   },
+  "proxy": "http://localhost:3001",
   "eslintConfig": {
     "extends": [
       "react-app",
