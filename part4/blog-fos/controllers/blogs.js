@@ -73,7 +73,6 @@ blogRouter.put(
     const token = request.token;
     const user = request.user;
     const blogtoUpdate = await Blog.findById(request.params.id);
-
     if (blogtoUpdate.user._id.toString() === user._id.toString()) {
       const blog = {
         title: body.title,

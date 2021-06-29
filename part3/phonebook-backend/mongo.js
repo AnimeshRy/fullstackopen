@@ -50,7 +50,7 @@ async function interactwithDB() {
   }
 
   if (process.argv.length === 5) {
-    const result = await record.save();
+    await record.save();
     console.log(`added ${newName} number ${newNumber} to phonebook`);
     mongoose.connection.close();
     return;
