@@ -10,4 +10,4 @@ This repository contains the solutions to the exercises provided by the course.
 - [x] Part 3: [Server Programming with NodeJS Express Library](https://fullstackopen.com/en/part3)
 - [x] Part 4: [Express application testing, user management](https://fullstackopen.com/en/part4)
 - [x] Part 5: [Testing React apps](https://fullstackopen.com/en/part5)
-- [x] Part 4: [Redux](https://fullstackopen.com/en/part6)
+- [x] Part 6: [Redux](https://fullstackopen.com/en/part6)
