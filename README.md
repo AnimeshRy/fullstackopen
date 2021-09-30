@@ -12,3 +12,4 @@ This repository contains the solutions to the exercises provided by the course.
 - [x] Part 5: [Testing React apps](https://fullstackopen.com/en/part5)
 - [x] Part 6: [Redux](https://fullstackopen.com/en/part6)
 - [x] Part 7: [React Router](https://fullstackopen.com/en/part7)
+- [x] Part 8: [GraphQL](https://fullstackopen.com/en/part8)
